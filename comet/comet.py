@@ -5,7 +5,7 @@ import requests
 
 from .models import Experience, Freelancer, Skill, User
 
-
+# The query for login is cleaned because we want to save a bit time in the /auth endpoint.
 def login(email, password):
     query = """
         mutation authenticate($email: EmailType!, $password: String!, $signupToken: String) {
@@ -39,6 +39,8 @@ def login(email, password):
     user_data = json_response['data']['authenticate']
     return user_data
 
+# This function handles main request for the required freelancer data. 
+# Other fields may or may not be added to this query. I wanted to keep it seperate from login.
 def get_user(email, password):
     query = """
         mutation authenticate($email: EmailType!, $password: String!, $signupToken: String) {
@@ -325,7 +327,9 @@ def get_user(email, password):
     user_data = json_response['data']['authenticate']
     return user_data
 
-
+# This function handles response body and save it as Freelancer under User.
+# The main trick in this, everytime it cleans previous records for particular User
+# in order to keep database weight relatively light and keep the data updated constantly.
 def map_freelancer(user, response):
     freelancer, created = Freelancer.objects.update_or_create(
         user=user,

@@ -20,7 +20,7 @@ from django.urls import path
 from comet import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
     path('auth', views.auth),
     path('pull', views.pull),
 ]

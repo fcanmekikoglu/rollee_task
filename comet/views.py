@@ -33,6 +33,9 @@ def auth(request):
             payload = {"error": "invalid json payload."}
             return JsonResponse(payload, status=400)
 
+        # Check if provided login credentials are valid. If it is, logic flows and creates a user with empty freelancer.
+        # We do this because we dont want to try to access invalid credentials in /pull.
+        # It slows down /auth process a lot but saves more time later.
         login_response = login(email=email, password=password)
 
         if 'error' in login_response:
@@ -64,6 +67,7 @@ def pull(request):
         return JsonResponse(payload, status=400)
 
     try:
+        # Check if provided request body is valid.
         body = json.loads(request.body)
         user_id = body.get('id')
 
@@ -76,13 +80,17 @@ def pull(request):
         return JsonResponse(payload, status=400)
 
     try:
+        # Get user from the DB with provided user id.  
         user = User.objects.get(id=user_id)
         freelancer_data = get_user(email=user.email, password=user.password)
 
         if 'error' in freelancer_data:
             return JsonResponse({'error': freelancer_data['error']}, status=400)
 
+        # Map freelancer makes the response body uniformat with the Freelancer model and saves to DB as related to the User model.
         map_freelancer(user=user, response=freelancer_data)
+
+        # After saving to DB, we call it from DB and serialize it for response. 
         freelancer = Freelancer.objects.get(user_id=user_id)
         serialized_freelancer = FreelancerDetailSerializer(freelancer)
 
